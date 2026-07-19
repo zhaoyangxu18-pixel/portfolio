@@ -466,11 +466,11 @@ else:
     from langchain_openai import ChatOpenAI
 
     @st.cache_resource
-    def load_llm():
+    def load_llm(_api_key: str):
         return ChatOpenAI(
             model="deepseek-chat",
             openai_api_base="https://api.deepseek.com/v1",
-            openai_api_key=os.getenv("DEEPSEEK_API_KEY"),
+            openai_api_key=_api_key,
             temperature=0.3,
             streaming=True
         )
@@ -494,9 +494,8 @@ else:
                 yield chunk.content
 
     try:
-        llm = load_llm()
+        llm = load_llm(os.getenv("DEEPSEEK_API_KEY"))
         resume_text = load_resume()
-        st.success(t('ai_ready'))
     except Exception as e:
         st.error(f"加载失败：{e}")
         st.stop()
@@ -519,7 +518,6 @@ else:
                 stream = ask_resume_stream(llm, resume_text, q)
                 answer = st.write_stream(stream)
             st.session_state.chat_messages.append({"role": "assistant", "content": answer})
-
     # ---- 聊天输入框 ----
     if question := st.chat_input(t('ai_placeholder')):
         st.session_state.chat_messages.append({"role": "user", "content": question})
